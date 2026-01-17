@@ -1,6 +1,5 @@
 /**
  * DropDash Backend - Login Success Notification
- * Fully Free + Production Safe
  */
 
 const express = require("express");
@@ -8,20 +7,16 @@ const admin = require("firebase-admin");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 
-// -------------------- APP SETUP --------------------
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// -------------------- RATE LIMIT (ANTI ABUSE) --------------------
 const loginLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 30,                // 30 requests per minute per IP
-  message: { error: "Too many requests" }
+  windowMs: 60 * 1000,
+  max: 30
 });
 
-// -------------------- FIREBASE ADMIN INIT --------------------
-// 🔐 Load service account from ENV (Render / Fly.io / Railway safe)
+// 🔐 LOAD SERVICE ACCOUNT FROM ENV
 const serviceAccount = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT
 );
@@ -30,54 +25,36 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-// -------------------- HEALTH CHECK --------------------
 app.get("/", (req, res) => {
   res.send("DropDash backend running ✅");
 });
 
-// -------------------- LOGIN SUCCESS NOTIFICATION --------------------
 app.post("/login-success", loginLimiter, async (req, res) => {
 
   const { fcmToken, idToken } = req.body;
 
   if (!fcmToken || !idToken) {
-    return res.status(400).json({
-      error: "Missing fcmToken or idToken"
-    });
+    return res.status(400).json({ error: "Missing data" });
   }
 
   try {
-    // 🔐 VERIFY FIREBASE USER
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
+    const decoded = await admin.auth().verifyIdToken(idToken);
 
-    console.log("Login notification for UID:", uid);
-
-    // 🔔 PUSH NOTIFICATION PAYLOAD
-    const message = {
+    await admin.messaging().send({
       token: fcmToken,
       notification: {
         title: "Login Successful",
-        body: "Your DropDash account was logged in successfully"
+        body: "Your DropDash account was logged in"
       },
-      android: {
-        priority: "high"
-      }
-    };
+      android: { priority: "high" }
+    });
 
-    // SEND NOTIFICATION
-    await admin.messaging().send(message);
+    res.json({ success: true });
 
-    return res.json({ success: true });
-
-  } catch (error) {
-    console.error("Login notification error:", error.message);
-    return res.status(401).json({ error: "Unauthorized" });
+  } catch (err) {
+    res.status(401).json({ error: "Unauthorized" });
   }
 });
 
-// -------------------- SERVER START --------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 DropDash backend running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log("🚀 Backend running"));
