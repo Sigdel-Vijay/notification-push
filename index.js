@@ -21,8 +21,13 @@ const loginLimiter = rateLimit({
 });
 
 // -------------------- FIREBASE ADMIN INIT --------------------
+// 🔐 Load service account from ENV (Render / Fly.io / Railway safe)
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT
+);
+
 admin.initializeApp({
-  credential: admin.credential.cert(require("./serviceAccountKey.json"))
+  credential: admin.credential.cert(serviceAccount)
 });
 
 // -------------------- HEALTH CHECK --------------------
@@ -46,7 +51,6 @@ app.post("/login-success", loginLimiter, async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
-    // (Optional) Log for debugging
     console.log("Login notification for UID:", uid);
 
     // 🔔 PUSH NOTIFICATION PAYLOAD
