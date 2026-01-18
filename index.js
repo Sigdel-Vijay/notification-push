@@ -57,7 +57,7 @@ app.post("/login-success", loginLimiter, async (req, res) => {
       token: fcmToken,
       data: {
         title: "Login Successful",
-        body: "Welcome back to DropDash 🎉",
+        body: "Welcome to the DropDash.com 🎉",
         type: "login" // used for sound routing
       },
       android: {
