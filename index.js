@@ -1,5 +1,6 @@
 /**
  * DropDash Backend - Login Success Notification
+ * DATA payload (Custom Sound Supported)
  * Fully Free + Production Safe
  */
 
@@ -38,31 +39,35 @@ app.get("/", (req, res) => {
   res.send("DropDash backend running ✅");
 });
 
-// -------------------- LOGIN SUCCESS --------------------
+// -------------------- LOGIN SUCCESS NOTIFICATION --------------------
 app.post("/login-success", loginLimiter, async (req, res) => {
   const { fcmToken, idToken } = req.body;
 
   if (!fcmToken || !idToken) {
-    console.error("❌ Missing token data");
     return res.status(400).json({ error: "Missing data" });
   }
 
   try {
+    // ✅ VERIFY USER
     const decoded = await admin.auth().verifyIdToken(idToken);
-    console.log("✅ Login notification UID:", decoded.uid);
+    console.log("✅ Login UID:", decoded.uid);
 
+    // ✅ DATA-ONLY PAYLOAD (IMPORTANT)
     const message = {
       token: fcmToken,
-      notification: {
+      data: {
         title: "Login Successful",
-        body: "Your DropDash account was logged in"
+        body: "Welcome back to DropDash 🎉",
+        type: "login" // used for sound routing
       },
-      android: { priority: "high" }
+      android: {
+        priority: "high"
+      }
     };
 
     await admin.messaging().send(message);
 
-    console.log("✅ Notification sent");
+    console.log("✅ Login notification sent");
     res.json({ success: true });
 
   } catch (err) {
