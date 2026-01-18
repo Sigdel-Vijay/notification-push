@@ -36,7 +36,7 @@ admin.initializeApp({
 
 // -------------------- HEALTH CHECK --------------------
 app.get("/", (req, res) => {
-  res.send("DropDash backend running ✅");
+  res.send("DropDash backend is running ✅");
 });
 
 // -------------------- LOGIN SUCCESS NOTIFICATION --------------------
