@@ -102,7 +102,8 @@ app.post("/promo-release", async (req, res) => {
 
         // 2️⃣ DATA-ONLY payload
  const multicastMessage = {
-    tokens: tokens,   // array of FCM tokens
+    tokens: tokens,   // array of FCM tokensnpm install
+
     data: {
         title: "New Promocode Released!",
         body: `Use ${promoCode} and get ${discountPercent}% off!`,
