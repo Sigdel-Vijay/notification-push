@@ -101,22 +101,22 @@ app.post("/promo-release", async (req, res) => {
         }
 
         // 2️⃣ DATA-ONLY payload
-        const message = {
-            tokens,
-            data: {
-                title: "New Promocode Released!",
-                body: `Use ${promoCode} and get ${discountPercent}% off!`,
-                type: "promo",         // For your app to route
-                promoCode: promoCode,
-                discountPercent: discountPercent.toString()
-            },
-            android: {
-                priority: "high"
-            }
-        };
+ const multicastMessage = {
+    tokens: tokens,   // array of FCM tokens
+    data: {
+        title: "New Promocode Released!",
+        body: `Use ${promoCode} and get ${discountPercent}% off!`,
+        type: "promo",
+        promoCode,
+        discountPercent: discountPercent.toString()
+    },
+    android: {
+        priority: "high"
+    }
+};
 
-        // 3️⃣ Send notification
-        const response = await admin.messaging().sendMulticast(message);
+const response = await admin.messaging().sendMulticast(multicastMessage);
+
 
         console.log(`✅ Promo notification sent: ${response.successCount}/${tokens.length}`);
         res.json({ success: true, sent: response.successCount });
