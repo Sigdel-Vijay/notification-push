@@ -31,7 +31,8 @@ const serviceAccount = JSON.parse(
 );
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://drop-dash-f40a0-default-rtdb.asia-southeast1.firebasedatabase.app/"
 });
 
 // -------------------- HEALTH CHECK --------------------
