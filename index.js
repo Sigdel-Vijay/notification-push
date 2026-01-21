@@ -77,38 +77,53 @@ app.post("/login-success", loginLimiter, async (req, res) => {
 });
 
 
-// -------------------- PROMO RELEASE NOTIFICATION --------------------
+// -------------------- PROMO RELEASE NOTIFICATION (DATA-ONLY) --------------------
 app.post("/promo-release", async (req, res) => {
     console.log("Received promo-release request:", req.body);
-  const { promoCode, discountPercent } = req.body;
-  if (!promoCode || discountPercent == null) return res.status(400).json({ error: "Missing data" });
 
-  try {
-    const usersSnap = await admin.database().ref("users").once("value");
-    const tokens = [];
-    usersSnap.forEach(userSnap => {
-      const token = userSnap.child("fcmToken").val();
-      if (token) tokens.push(token);
-    });
+    const { promoCode, discountPercent } = req.body;
+    if (!promoCode || discountPercent == null) {
+        return res.status(400).json({ error: "Missing data" });
+    }
 
-    if (tokens.length === 0) return res.json({ success: true, message: "No users to notify" });
+    try {
+        // 1️⃣ Get all user FCM tokens
+        const usersSnap = await admin.database().ref("users").once("value");
+        const tokens = [];
+        usersSnap.forEach(userSnap => {
+            const token = userSnap.child("fcmToken").val();
+            if (token) tokens.push(token);
+        });
 
-    const message = {
-      tokens,
-      notification: {
-        title: "New Promocode Released!",
-        body: `Use ${promoCode} and get ${discountPercent}% off!`
-      },
-      android: { priority: "high" },
-      data: { type: "promo" }
-    };
+        if (tokens.length === 0) {
+            return res.json({ success: true, message: "No users to notify" });
+        }
 
-    const response = await admin.messaging().sendMulticast(message);
-    res.json({ success: true, sent: response.successCount });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
+        // 2️⃣ DATA-ONLY payload
+        const message = {
+            tokens,
+            data: {
+                title: "New Promocode Released!",
+                body: `Use ${promoCode} and get ${discountPercent}% off!`,
+                type: "promo",         // For your app to route
+                promoCode: promoCode,
+                discountPercent: discountPercent.toString()
+            },
+            android: {
+                priority: "high"
+            }
+        };
+
+        // 3️⃣ Send notification
+        const response = await admin.messaging().sendMulticast(message);
+
+        console.log(`✅ Promo notification sent: ${response.successCount}/${tokens.length}`);
+        res.json({ success: true, sent: response.successCount });
+
+    } catch (err) {
+        console.error("❌ Promo notification failed:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // -------------------- START SERVER --------------------
