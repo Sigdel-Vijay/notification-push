@@ -76,6 +76,40 @@ app.post("/login-success", loginLimiter, async (req, res) => {
   }
 });
 
+
+// -------------------- PROMO RELEASE NOTIFICATION --------------------
+app.post("/promo-release", async (req, res) => {
+  const { promoCode, discountPercent } = req.body;
+  if (!promoCode || discountPercent == null) return res.status(400).json({ error: "Missing data" });
+
+  try {
+    const usersSnap = await admin.database().ref("users").once("value");
+    const tokens = [];
+    usersSnap.forEach(userSnap => {
+      const token = userSnap.child("fcmToken").val();
+      if (token) tokens.push(token);
+    });
+
+    if (tokens.length === 0) return res.json({ success: true, message: "No users to notify" });
+
+    const message = {
+      tokens,
+      notification: {
+        title: "New Promocode Released!",
+        body: `Use ${promoCode} and get ${discountPercent}% off!`
+      },
+      android: { priority: "high" },
+      data: { type: "promo" }
+    };
+
+    const response = await admin.messaging().sendMulticast(message);
+    res.json({ success: true, sent: response.successCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // -------------------- START SERVER --------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
