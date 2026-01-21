@@ -116,7 +116,8 @@ app.post("/promo-release", async (req, res) => {
     }
 };
 
-const response = await admin.messaging().sendMulticast(multicastMessage);
+const messaging = admin.messaging();
+const response = await messaging.sendMulticast(multicastMessage);
 
 
         console.log(`✅ Promo notification sent: ${response.successCount}/${tokens.length}`);
