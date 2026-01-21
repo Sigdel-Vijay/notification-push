@@ -79,6 +79,7 @@ app.post("/login-success", loginLimiter, async (req, res) => {
 
 // -------------------- PROMO RELEASE NOTIFICATION --------------------
 app.post("/promo-release", async (req, res) => {
+    console.log("Received promo-release request:", req.body);
   const { promoCode, discountPercent } = req.body;
   if (!promoCode || discountPercent == null) return res.status(400).json({ error: "Missing data" });
 
