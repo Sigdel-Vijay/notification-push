@@ -6,7 +6,7 @@ admin.initializeApp({
 });
 
 const tokens = [
-  'd9KqmcEdRyyt6vKqD52TuK:APA91bFb9bj4XuMvJCWsR3bdsDwV3_dhTyXxPPhe9xIfpJrYz6lcSNzpLQD-etJa5NjkO75-H67aCw13IL4vUTd-Ajy3SzOAXdrQVlLpzgpHuRVkn17aY2I'
+  'd5KEw3JzRLmJxs0bnEiMAY:APA91bEz0WdJ8MfSyMTseoq4TqTk-q4tqjXjZiQo5XLKZnzqoRUeTULqXSx5uQOb0VeYvDdewhXr8jnDW6F21zT3BjbkRQw2Q4YvsCUkY-c0LHNKN_b8Nlc'
 ];
 
 const message = {
